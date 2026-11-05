@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#123b32">
+  <title>Meu projeto | Faça uma doação</title>
+  <style>
+    :root { --green:#16734d; --dark:#123b32; --cream:#f5f7f3; --ink:#1e2b25; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial, sans-serif; background:var(--cream); color:var(--ink); }
+    header { background:var(--dark); color:white; padding:22px 18px; text-align:center; }
+    header .brand { font-weight:800; letter-spacing:.4px; font-size:20px; }
+    main { width:min(720px, calc(100% - 28px)); margin:38px auto; }
+    .card { background:white; border-radius:22px; padding:clamp(22px,5vw,42px); box-shadow:0 12px 35px #173c2b12; }
+    .tag { display:inline-block; background:#e7f4ec; color:#17633f; padding:7px 12px; border-radius:30px; font-size:13px; font-weight:700; }
+    h1 { font-size:clamp(30px,6vw,44px); line-height:1.08; margin:18px 0 12px; color:var(--dark); }
+    p { line-height:1.6; color:#526158; }
+    .amounts { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin:22px 0; }
+    .amount { border:1px solid #d8e3dc; background:white; border-radius:12px; padding:13px 5px; font-weight:700; color:var(--dark); cursor:pointer; }
+    .amount.active { border:2px solid var(--green); background:#edf7f0; }
+    label { display:block; font-weight:700; font-size:14px; margin:18px 0 8px; }
+    input { width:100%; border:1px solid #cbd8cf; border-radius:12px; padding:14px; font-size:16px; }
+    .donate { display:block; width:100%; border:0; border-radius:13px; background:var(--green); color:white; padding:16px; font-size:17px; font-weight:800; cursor:pointer; margin-top:18px; }
+    .pixbox { margin-top:20px; padding:18px; background:#f2f7f3; border-radius:15px; display:none; }
+    .pixkey { word-break:break-all; font-family:monospace; background:white; border:1px dashed #a9bdb0; border-radius:9px; padding:12px; margin:10px 0; }
+    .copy { border:1px solid var(--green); background:white; color:var(--green); border-radius:10px; padding:11px 15px; font-weight:700; cursor:pointer; }
+    .note { font-size:13px; color:#69776e; }
+    footer { text-align:center; padding:0 20px 32px; color:#7b877f; font-size:13px; }
+    @media(max-width:430px){ .amounts{grid-template-columns:repeat(2,1fr)} }
+  </style>
+</head>
+<body>
+  <header><div class="brand">💚 Meu projeto</div></header>
+  <main>
+    <section class="card">
+      <span class="tag">APOIE ESTE PROJETO</span>
+      <h1>Ajude a fazer acontecer!</h1>
+      <p>Se você chegou até aqui e deseja contribuir, qualquer valor será recebido com muita gratidão. Sua ajuda faz a diferença. Obrigado pelo apoio!</p>
+      <h3>Escolha o valor da sua doação</h3>
+      <div class="amounts" aria-label="Valores de doação">
+        <button class="amount active" data-value="5">R$ 5</button>
+        <button class="amount" data-value="10">R$ 10</button>
+        <button class="amount" data-value="20">R$ 20</button>
+        <button class="amount" data-value="50">R$ 50</button>
+      </div>
+      <label for="custom">Ou digite outro valor (R$)</label>
+      <input id="custom" type="number" min="1" step="0.01" placeholder="Ex.: 15,00">
+      <button class="donate" id="showPix">QUERO DOAR VIA PIX</button>
+      <div class="pixbox" id="pixbox">
+        <strong>Faça seu Pix</strong>
+        <p>Abra o aplicativo do seu banco, escolha Pix e use a chave abaixo. Confira o destinatário antes de confirmar.</p>
+        <div class="pixkey" id="pixkey">COLOQUE-SUA-CHAVE-PIX-AQUI</div>
+        <button class="copy" id="copy">Copiar chave Pix</button>
+        <p class="note" id="status">O valor escolhido foi <strong id="chosen">R$ 5,00</strong>. Digite sua chave Pix no arquivo do site antes de divulgar.</p>
+      </div>
+      <p class="note">Doação voluntária. Não informe senhas ou códigos bancários neste site.</p>
+    </section>
+  </main>
+  <footer>Obrigado por considerar apoiar o Meu projeto. 💚</footer>
+  <script>
+    // IMPORTANTE: troque o texto abaixo pela sua chave Pix antes de publicar.
+    const PIX_KEY = "COLOQUE-SUA-CHAVE-PIX-AQUI";
+    let selected = 5;
+    const money = n => Number(n).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    document.querySelectorAll('.amount').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.amount').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); selected = Number(btn.dataset.value);
+      document.getElementById('custom').value = '';
+    }));
+    document.getElementById('custom').addEventListener('input', e => {
+      if (e.target.value !== '') {
+        document.querySelectorAll('.amount').forEach(b => b.classList.remove('active'));
+        selected = Number(e.target.value);
+      }
+    });
+    document.getElementById('showPix').addEventListener('click', () => {
+      const custom = document.getElementById('custom').value;
+      const amount = custom === '' ? selected : Number(custom);
+      if (!Number.isFinite(amount) || amount <= 0) { alert('Digite um valor válido para doar.'); return; }
+      document.getElementById('chosen').textContent = money(amount);
+      document.getElementById('pixkey').textContent = PIX_KEY;
+      document.getElementById('pixbox').style.display = 'block';
+      document.getElementById('pixbox').scrollIntoView({behavior:'smooth',block:'nearest'});
+    });
+    document.getElementById('copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(PIX_KEY);
+        document.getElementById('copy').textContent = 'Chave copiada!';
+      } catch {
+        alert('Não foi possível copiar automaticamente. Selecione e copie a chave Pix.');
+      }
+    });
+  </script>
+</body>
+</html>
